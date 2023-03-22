@@ -8,4 +8,4 @@ end
 
 vim.keymap.set('n', '<leader>ut', toggleAndFocusUndoTree, {desc = 'UndoTree [T]oggle'})
 
-return { 'mbbill/undotree' }
+return {'mbbill/undotree'}

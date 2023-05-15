@@ -4,4 +4,6 @@
 -- See the kickstart.nvim README for more information
 vim.keymap.set('n', 'n', 'nzz')
 vim.keymap.set('n', 'N', 'Nzz')
+
+vim.cmd.imap('jj', '<Esc>')
 return {}

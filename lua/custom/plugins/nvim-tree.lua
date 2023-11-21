@@ -12,7 +12,7 @@ return {'nvim-tree/nvim-tree.lua',
 	},
 	config = function ()
 		require('nvim-tree').setup()
-		vim.keymap.set('n', '-', vim.cmd.NvimTreeFocus)
+		vim.keymap.set('n', '-', vim.cmd.NvimTreeFindFile)
 	end,
 	keys = '-'
 }

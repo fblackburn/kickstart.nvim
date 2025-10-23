@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -102,7 +102,7 @@ vim.g.have_nerd_font = false
 vim.o.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.o.relativenumber = true
+vim.o.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
@@ -1025,5 +1025,53 @@ require('lazy').setup({
   },
 })
 
+local function punch()
+  local function ajouter_nouvelle_ligne()
+    vim.api.nvim_put({ '' }, 'l', true, true)
+    -- alternative: vim.cmd("normal! o")
+  end
+  local ligne = vim.trim(vim.fn.getline '.')
+  local pattern_date = '%d%d%d%d%-%d%d%-%d%d'
+
+  -- Faire une nouvelle ligne si on est dans une nouvelle journée
+  local date = vim.fn.strptime('%Y-%m-%d', ligne:match(pattern_date .. ' '))
+  local date_du_jour = os.time()
+  if date ~= 0 and os.date('%Y-%m-%d', date) < os.date('%Y-%m-%d', date_du_jour) then
+    ajouter_nouvelle_ligne()
+
+    -- Vérifier les no. de semaine et faire une ligne vide pour séparer les semaines
+    local no_semaine_ligne = vim.fn.strftime('%V', date)
+    local no_semaine_date_du_jour = vim.fn.strftime('%V', date_du_jour)
+    if no_semaine_ligne ~= no_semaine_date_du_jour then
+      ajouter_nouvelle_ligne()
+    end
+
+    ligne = vim.trim(vim.fn.getline '.')
+  end
+
+  if ligne:match('^' .. pattern_date .. ' ') then
+    -- Ajouter l'heure en gardant les commentaires de fin de ligne
+    local heure = os.date '%H:%M'
+    ligne = vim.fn.substitute(ligne, [[\v\s{0,7}(\s*(#.*)?)$]], vim.fn.printf([[ %s \1]], heure), '')
+    vim.fn.setline('.', vim.trim(ligne))
+  elseif ligne == '' then
+    -- Ajouter la date et l'heure
+    ligne = os.date '%Y-%m-%d %H:%M'
+    vim.fn.setline('.', ligne)
+  else
+    vim.cmd.echohl 'WarningMsg'
+    vim.cmd.echo [["Monsieur, c'est inapproprié de faire cela ici!"]]
+    vim.cmd.echohl 'None'
+  end
+end
+
+-- temps.txt
+vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
+  group = autocmd_group,
+  pattern = vim.fs.normalize '~/personnel/temps.txt',
+  callback = function()
+    vim.keymap.set('n', '<leader>p', punch, { buffer = true, desc = '[P]unch' })
+  end,
+})
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
